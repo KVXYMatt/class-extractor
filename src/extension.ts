@@ -5,6 +5,21 @@ import * as vscode from 'vscode';
 import * as htmlparser from 'htmlparser2';
 import * as ncp from 'copy-paste';
 
+function processEl(list) {
+	var finalList = [];
+	var element = list[0];
+
+	while (element !== null) {
+		if (element.type === 'tag') {
+			finalList.push(element.attribs.class);
+		}
+
+		element = element.next !== null ? element.next : element.children !== null && typeof element.children !== 'undefined' ? element.children[0] : null;
+	}
+
+	return finalList;
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('extension.extractClasses', () => {
 		var editor = vscode.window.activeTextEditor;
@@ -18,8 +33,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Select each unique class across elements
 		var outputClasses: string[] = [];
-		parsedEls.forEach(el => {
-			var cssClasses = el.attribs.class ? el.attribs.class.split(' ') : [];
+
+		// Start recursion
+		var processedEls = processEl(parsedEls);
+		
+		processedEls.forEach(el => {
+			var cssClasses = el.split(' ');
 
 			cssClasses.forEach(cssClass => {
 				if (outputClasses.indexOf(cssClass) === -1) {
