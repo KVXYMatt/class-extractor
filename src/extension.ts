@@ -9,13 +9,15 @@ function processEl(list) {
 	var finalList = [];
 	var element = list[0];
 
-	while (element !== null) {
-		if (element.type === 'tag') {
-			finalList.push(element.attribs.class);
+	list.forEach(function f(el) {
+		if (el.children && el.children.length) {
+			el.children.forEach(f);
 		}
 
-		element = element.next !== null ? element.next : element.children !== null && typeof element.children !== 'undefined' ? element.children[0] : null;
-	}
+		if (el.type === 'tag') {
+			finalList.unshift(el);
+		}
+	});
 
 	return finalList;
 }
@@ -31,14 +33,14 @@ export function activate(context: vscode.ExtensionContext) {
 		var selectedText = editor.document.getText(editor.selection);
 		var parsedEls = htmlparser.parseDOM(selectedText);
 
-		// Select each unique class across elements
-		var outputClasses: string[] = [];
-
 		// Start recursion
 		var processedEls = processEl(parsedEls);
+
+		// Select each unique class across elements
+		var outputClasses: string[] = [];
 		
 		processedEls.forEach(el => {
-			var cssClasses = el.split(' ');
+			var cssClasses = el.attribs.class.split(' ');
 
 			cssClasses.forEach(cssClass => {
 				if (outputClasses.indexOf(cssClass) === -1) {
