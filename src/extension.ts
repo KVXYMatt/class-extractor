@@ -7,16 +7,22 @@ import * as ncp from 'copy-paste';
 
 function processEl(list) {
 	var finalList = [];
-	var element = list[0];
 
-	list.forEach(function f(el) {
-		if (el.children && el.children.length) {
-			el.children.forEach(f);
+	function recursiveAdd(el) {
+		if (el.type !== 'text') {
+			finalList.push(el);
+	
+			if (typeof el.children !== 'undefined' && el.children.length > 0) {
+				el.children.forEach(childEl => {
+					recursiveAdd(childEl);
+				});
+			}
 		}
+	}
 
-		if (el.type === 'tag') {
-			finalList.unshift(el);
-		}
+	// Start recursion
+	list.forEach(element => {
+		recursiveAdd(element);
 	});
 
 	return finalList;
