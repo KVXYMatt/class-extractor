@@ -8,13 +8,16 @@ import * as ncp from 'copy-paste';
 function processEl(list) {
 	var finalList = [];
 
-	function recursiveAdd(el) {
+	function recursiveAdd(el, level) {
 		if (el.type !== 'text') {
-			finalList.push(el);
+			finalList.push({
+				level: level,
+				classList: el.attribs.class.split(' ')
+			});
 	
 			if (typeof el.children !== 'undefined' && el.children.length > 0) {
 				el.children.forEach(childEl => {
-					recursiveAdd(childEl);
+					recursiveAdd(childEl, level + 1);
 				});
 			}
 		}
@@ -22,7 +25,7 @@ function processEl(list) {
 
 	// Start recursion
 	list.forEach(element => {
-		recursiveAdd(element);
+		recursiveAdd(element, 0);
 	});
 
 	return finalList;
@@ -39,18 +42,26 @@ export function activate(context: vscode.ExtensionContext) {
 		var selectedText = editor.document.getText(editor.selection);
 		var parsedEls = htmlparser.parseDOM(selectedText);
 
+		if (parsedEls.length <= 0) {
+			vscode.window.showErrorMessage('Could not identify any elements to extract classes from');
+			return; // No elements to extract
+		}
+
 		// Start recursion
 		var processedEls = processEl(parsedEls);
 
+		processedEls.map((el) => {
+			el.classList.filter((classItem) => {
+				return classItem.indexOf()
+			});
+		});
+
 		// Select each unique class across elements
 		var outputClasses: string[] = [];
-		
 		processedEls.forEach(el => {
-			var cssClasses = el.attribs.class.split(' ');
-
-			cssClasses.forEach(cssClass => {
+			el.classList.forEach(cssClass => {
 				if (outputClasses.indexOf(cssClass) === -1) {
-					outputClasses.push(cssClass);
+					outputClasses.push(cssClass + el.level);
 				}
 			});
 		});
@@ -64,7 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Output string for user selection
 		ncp.copy(finalString, () => {
-			vscode.window.showInformationMessage('Copied CSS format to clipboard');
+			vscode.window.showInformationMessage('Copied CSS classes to clipboard');
 		});
 	});
 
