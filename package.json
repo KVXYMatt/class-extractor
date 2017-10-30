@@ -3,6 +3,7 @@
   "displayName": "Class Extractor",
   "description": "Grabs the classes used in a particular set of HTML",
   "version": "1.0.0",
+  "icon": "https://raw.githubusercontent.com/KVXYMatt/class-extractor/icon.png",
   "publisher": "kvxy",
   "engines": {
     "vscode": "^1.16.0"

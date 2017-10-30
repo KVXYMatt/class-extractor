@@ -1,10 +1,10 @@
 # class-extractor README
 
-Extracts CSS classes from a selection of markup and formats it into a useable list to paste into your CSS/LESS/SASS/whatever.
+Extracts CSS classes from a selection of markup and formats it into a useable list to paste into your CSS/LESS/SASS/whatever. Uses htmlparser2 so should be reasonably good at finding the right stuff.
 
 ## Requirements
 
-Uses the ncp package, may require external dependencies in Linux and macOS.
+Uses the [ncp](https://github.com/xavi-/node-copy-paste) package, may require external dependencies in Linux and macOS.
 
 ## Future Plans
 
