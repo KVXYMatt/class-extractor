@@ -2,9 +2,13 @@
   "name": "class-extractor",
   "displayName": "Class Extractor",
   "description": "Grabs the classes used in a particular set of HTML",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icon": "icon.png",
-  "publisher": "kvxy",
+  "publisher": "kvxymatt",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KVXYMatt/class-extractor.git"
+  },
   "engines": {
     "vscode": "^1.16.0"
   },
