@@ -9,7 +9,7 @@ function processEl(list) {
 	var finalList = [];
 
 	function recursiveAdd(el) {
-		if (el.type !== 'text') {
+		if (el.type === 'tag') {
 			finalList.push(el);
 	
 			if (typeof el.children !== 'undefined' && el.children.length > 0) {
@@ -45,8 +45,10 @@ export function activate(context: vscode.ExtensionContext) {
 		// Select each unique class across elements
 		var outputClasses: string[] = [];
 		
-		processedEls.forEach(el => {
-			var cssClasses = el.attribs.class.split(' ');
+		processedEls.filter((el) => {
+			return typeof el.attribs.class !== 'undefined' && el.attribs.class.trim() !== '';
+		}).forEach(el => {
+			var cssClasses = el.attribs.class.split(' ').filter(className => className.trim() !== '');
 
 			cssClasses.forEach(cssClass => {
 				if (outputClasses.indexOf(cssClass) === -1) {

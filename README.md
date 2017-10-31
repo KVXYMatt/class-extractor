@@ -13,6 +13,10 @@ Uses the [ncp](https://github.com/xavi-/node-copy-paste) package, may require ex
 
 ## Release Notes
 
+### 1.0.1
+
+Many minor fixes. Tags with no attributes, empty classes and things other than tags (script blocks, comments etc...) will now be properly ignored
+
 ### 1.0.0
 
 Initial release
