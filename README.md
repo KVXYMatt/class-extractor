@@ -23,7 +23,7 @@ Uses the [ncp](https://github.com/xavi-/node-copy-paste) package, may require ex
 
 ## Release Notes
 
-### 1.0.2
+### 1.0.3
 
 Added some install and usage documentation and fixed dependency vulnerabilities
 
