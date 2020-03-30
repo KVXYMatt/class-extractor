@@ -16,6 +16,38 @@ Class Extractor adds just one command, `Extract CSS classes from HTML`. Select s
 
 Uses the [ncp](https://github.com/xavi-/node-copy-paste) package, may require external dependencies in Linux and macOS.
 
+## Development
+
+- Fork and clone repository
+  
+  ```console
+  git clone
+  ```
+
+- Install dependencies
+
+  ```console
+  npm install
+  ```
+
+- Make changes
+
+- Install vsce
+
+  ```console
+  npm install -g vsce
+  ```
+
+- Build
+  ```console
+  vsce package
+  ```
+
+- Install on vscode
+  
+  - Plugins
+  - Install from VSIX
+
 ## Future Plans
 
 - Proper unit testing & code restructure to allow proper unit testing
