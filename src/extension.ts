@@ -28,34 +28,54 @@ function processEl(list) {
 	return finalList;
 }
 
-export function activate(context: vscode.ExtensionContext) {
-	let disposable = vscode.commands.registerCommand('extension.extractClasses', () => {
-		var editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return; // No open text editor
-		}
+function extractClassesFromMarkup(markup: string) {
+	// Parse markup using htmlparser
+	var parsedEls = htmlparser.parseDOM(markup);
 
-		// Parse selected DOM to extract elements
-		var selectedText = editor.document.getText(editor.selection);
-		var parsedEls = htmlparser.parseDOM(selectedText);
+	// Start recursion
+	var processedEls = processEl(parsedEls);
 
-		// Start recursion
-		var processedEls = processEl(parsedEls);
+	// Select each unique class across elements
+	var outputClasses: string[] = [];
+	
+	processedEls.filter((el) => {
+		return typeof el.attribs.class !== 'undefined' && el.attribs.class.trim() !== '';
+	}).forEach(el => {
+		var cssClasses = el.attribs.class.split(' ').filter(className => className.trim() !== '');
 
-		// Select each unique class across elements
-		var outputClasses: string[] = [];
-		
-		processedEls.filter((el) => {
-			return typeof el.attribs.class !== 'undefined' && el.attribs.class.trim() !== '';
-		}).forEach(el => {
-			var cssClasses = el.attribs.class.split(' ').filter(className => className.trim() !== '');
-
-			cssClasses.forEach(cssClass => {
-				if (outputClasses.indexOf(cssClass) === -1) {
-					outputClasses.push(cssClass);
-				}
-			});
+		cssClasses.forEach(cssClass => {
+			if (outputClasses.indexOf(cssClass) === -1) {
+				outputClasses.push(cssClass);
+			}
 		});
+	});
+
+	return outputClasses;
+}
+
+export function activate(context: vscode.ExtensionContext) {
+	context.subscriptions.push(vscode.commands.registerCommand('extension.extractClasses', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor)
+			return; // No open text editor
+
+		const outputClasses = extractClassesFromMarkup(editor.document.getText(editor.selection));
+
+		const finalString = outputClasses.reduce((classText, classToAdd) =>
+			classText + (classText !== '' ? '\n' : '') + `.${classToAdd} { }`, '');
+
+		// Copy string to user's clipboard and show notification
+		ncp.copy(finalString, () => {
+			vscode.window.showInformationMessage('Copied CSS format to clipboard');
+		});
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('extension.extractBemClasses', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor)
+			return; // No open text editor
+
+		const outputClasses = extractClassesFromMarkup(editor.document.getText(editor.selection));
 
 		// Create BEM convention
 		const rootClasses: any = {};
@@ -86,9 +106,8 @@ export function activate(context: vscode.ExtensionContext) {
 					x = x[item];
 				});
 				return className_acc;
-			},
-			{}
-		);
+			}, {});
+		
 		// Format and combine string for output
 		var finalString = "";
 		const cleanJSONRegex = /,|"|:/g;
@@ -99,11 +118,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Output string for user selection
 		ncp.copy(finalString, () => {
-			vscode.window.showInformationMessage('Copied CSS format to clipboard');
+			vscode.window.showInformationMessage('Copied LESS/SCSS BEM format to clipboard');
 		});
-	});
-
-	context.subscriptions.push(disposable);
+	}));
 }
 
 export function deactivate() { }

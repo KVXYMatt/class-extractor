@@ -24,6 +24,10 @@
             {
                 "command": "extension.extractClasses",
                 "title": "Extract CSS classes from HTML"
+            },
+            {
+                "command": "extension.extractBemClasses",
+                "title": "Extract LESS/SCSS BEM classes from HTML"
             }
         ]
     },
