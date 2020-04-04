@@ -2,7 +2,7 @@
     "name": "class-extractor",
     "displayName": "Class Extractor",
     "description": "Grabs the classes used in a particular set of HTML",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "icon": "icon.png",
     "publisher": "kvxymatt",
     "repository": {
@@ -24,6 +24,10 @@
             {
                 "command": "extension.extractClasses",
                 "title": "Extract CSS classes from HTML"
+            },
+            {
+                "command": "extension.extractBemClasses",
+                "title": "Extract LESS/SCSS BEM classes from HTML"
             }
         ]
     },
