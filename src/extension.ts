@@ -78,49 +78,47 @@ export function activate(context: vscode.ExtensionContext) {
 		const outputClasses = extractClassesFromMarkup(editor.document.getText(editor.selection));
 
 		// Create BEM convention
-		const rootClasses: any = {};
-		var bemObject = outputClasses.reduce(
-			(className_acc: any, currentClassName: any) => {
-				var x: any = className_acc;
-				if (
-					currentClassName.split(/__/).length === 1 &&
-					currentClassName.split(/__/).length === 1
-				) {
-					x[`.${currentClassName}`] = {};
-					rootClasses[currentClassName] = {};
-					return className_acc;
+		const separators = ['__', '--']
+		const result = outputClasses.map((outputClass: string) => {
+			return test(outputClass, '__');
+		}).reduce((allClasses, currentClass: Array<Array<string>>) => {
+			currentClass.forEach(([separator, name], index: number) => {
+				if (separator === '') {
+					// Add at top level
+					allClasses[name] = {};
+					return;
 				}
-				currentClassName.split(/__/).forEach(item => {
-					item = rootClasses.hasOwnProperty(item) ? `.${item}` : `&__${item}`;
+				
+				// TODO handle other separators
+			});
 
-					if (!x[item]) {
-						if (item.split(/--/).length === 2) {
-							const tokens = currentClassName.split(/--/);
-							x[`&__${tokens[0].split("__").slice(-1)[0]}`] = {
-								[`&--${tokens[1]}`]: {}
-							};
-						} else {
-							x[item] = {};
-						}
-					}
-					x = x[item];
-				});
-				return className_acc;
-			}, {});
-		
-		// Format and combine string for output
-		var finalString = "";
-		const cleanJSONRegex = /,|"|:/g;
-		Object.keys(bemObject).forEach(key => {
-			finalString +=
-				key + JSON.stringify(bemObject[key]).replace(cleanJSONRegex, "");
-		});
+			return allClasses;
+		}, {});
+
+		const finalString = '';
 
 		// Output string for user selection
-		ncp.copy(finalString, () => {
-			vscode.window.showInformationMessage('Copied LESS/SCSS BEM format to clipboard');
-		});
+		// ncp.copy(finalString, () => {
+		// 	vscode.window.showInformationMessage('Copied LESS/SCSS BEM format to clipboard');
+		// });
 	}));
 }
 
 export function deactivate() { }
+
+function test(input: string, separator: string, depth: number = 0) {
+	if (!input.includes(separator)) {
+		return [['', input]];
+	} else {
+		const splitIndex = input.indexOf(separator);
+		const leftPartSeparator = depth === 0 ? '' : separator;
+		const leftPart = input.substring(0, splitIndex);
+		const rightPart = input.substring(splitIndex + separator.length);
+
+		if (rightPart.includes(separator)) {
+			return [[leftPartSeparator, leftPart], ...test(rightPart, separator, depth + 1)];
+		} else {
+			return [[leftPartSeparator, leftPart], [separator, rightPart]];
+		}
+	}
+}
