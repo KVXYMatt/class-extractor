@@ -62,6 +62,16 @@ function extractClassesFromMarkup(markup: string) {
 	return outputClasses;
 }
 
+function getMatchingLetterCount(firstWord: string, secondWord: string) {
+	for (let position = 0; position < firstWord.length; position++) {
+		if (firstWord[position] !== secondWord[position]) {
+			return position;
+		}
+	}
+
+	return firstWord.length;
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('extension.extractClasses', () => {
 		const editor = vscode.window.activeTextEditor;
@@ -86,30 +96,89 @@ export function activate(context: vscode.ExtensionContext) {
 
 		const outputClasses = extractClassesFromMarkup(editor.document.getText(editor.selection));
 
-		// Create BEM convention
-		const separators = ['__', '--']
-		const result = outputClasses.map((outputClass: string) => {
-			return test(outputClass, '__');
-		}).reduce((allClasses, currentClass: Array<Array<string>>) => {
-			currentClass.forEach(([separator, name], index: number) => {
-				if (separator === '') {
-					// Add at top level
-					allClasses[name] = {};
-					return;
+		// Create BEM convention, the order of operations here is important
+		const separatorTypes = [{ text: '--', pattern: /(.*)--(.+)$/, outputType: 'modifier' },
+			{ text: '__', pattern: /(.*)__(.+)$/, outputType: 'element' },
+			{ text: '', pattern: /(.*)^(.+)$/, outputType: 'block' }];
+
+		// Create object structure
+		let classObjectStructure = outputClasses.map(cssClass => {
+			let classOutput = [];
+
+			while (cssClass.length) {
+				for (const separator of separatorTypes) {
+					if (separator.pattern.test(cssClass)) {
+						let [ _, remainingClass, component ] = separator.pattern.exec(cssClass);
+
+						classOutput.unshift({ type: separator.outputType, component });
+						cssClass = remainingClass;
+					}
 				}
+			}
+
+			return {
+				path: classOutput.reduce((path, component) => path += `/${component.type}:${component.component}`, ''),
+				components: classOutput
+			};
+		});
+
+		let collapsedClassStructure = classObjectStructure.sort((a, b) => b.components.length - a.components.length).reduce((structure, classObject, _, original) => {
+			if (classObject.components.length === 1) {
+				structure.push(classObject);
+			} else if (classObject.components.length > 1) {
+				let previousHighestScore = 0;
+				let matchingOption = original.filter((potentialMatch) => {
+					if (potentialMatch.components.length >= classObject.components.length) {
+						return false;
+					}
+					
+					let thisScore = getMatchingLetterCount(classObject.path, potentialMatch.path);
+					// Only allow this as a match if the score is higher AND the potential path is a complete match OR the next character in the path is the path separator
+					// This way we only match on whole paths rather than partials
+					if (thisScore > previousHighestScore && (thisScore >= potentialMatch.path.length || classObject.path[thisScore] === '/')) {
+						previousHighestScore = thisScore;
+						return true;
+					}
+
+					return false;
+				})[0];
 				
-				// TODO handle other separators
-			});
+				if (!matchingOption) {
+					structure.push(classObject);
+				} else {
+					var lastComponent = matchingOption.components[matchingOption.components.length - 1];
+					if (!lastComponent.children)
+						lastComponent.children = [];
+					
+					lastComponent.children = [ ...lastComponent.children, ...classObject.components.slice(classObject.path.substring(0, previousHighestScore).split('/').length - 1)];
+				}
+			}
+			
+			return structure;
+		}, []).flatMap(structure => structure.components);
 
-			return allClasses;
-		}, {});
+		let finalString = collapsedClassStructure.reduce((output, structure) => {
+			let getComponentChildOutput = (component, depth) => {
+				let childrenOutput = '';
+				if (component.children) {
+					childrenOutput = component.children.map(grandChild => getComponentChildOutput(grandChild, depth + 1)).join('\n');
+				}
 
-		const finalString = '';
+				const separator = separatorTypes.find(type => type.outputType === component.type);
+
+				return replaceClassFromTemplate(`&${separator.text}${component.component}`).replace('}', `${childrenOutput}\n}`);
+			};
+			
+			let descendants = structure.children ? structure.children.map(childComponent => getComponentChildOutput(childComponent, 0)) : '';
+			output += (output !== '' ? '\n' : '') + replaceClassFromTemplate(structure.component).replace('}', descendants !== '' ? `${descendants}\n}` : '}');
+
+			return output;
+		}, '');
 
 		// Output string for user selection
-		// ncp.copy(finalString, () => {
-		// 	vscode.window.showInformationMessage('Copied LESS/SCSS BEM format to clipboard');
-		// });
+		ncp.copy(finalString, () => {
+			vscode.window.showInformationMessage('Copied LESS/SCSS BEM format to clipboard');
+		});
 	}));
 }
 
