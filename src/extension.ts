@@ -28,6 +28,15 @@ function processEl(list) {
 	return finalList;
 }
 
+function replaceClassFromTemplate(cssClass: string): string {
+	var replacementTemplate: string = vscode.workspace.getConfiguration('class-extractor').get('outputClassFormat');
+	if (replacementTemplate == null || replacementTemplate === '') {
+		replacementTemplate = '.@ { }';
+	}
+
+	return replacementTemplate.replace('@', cssClass);
+}
+
 function extractClassesFromMarkup(markup: string) {
 	// Parse markup using htmlparser
 	var parsedEls = htmlparser.parseDOM(markup);
@@ -62,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const outputClasses = extractClassesFromMarkup(editor.document.getText(editor.selection));
 
 		const finalString = outputClasses.reduce((classText, classToAdd) =>
-			classText + (classText !== '' ? '\n' : '') + `.${classToAdd} { }`, '');
+			classText + (classText !== '' ? '\n' : '') + replaceClassFromTemplate(classToAdd), '');
 
 		// Copy string to user's clipboard and show notification
 		ncp.copy(finalString, () => {
