@@ -10,7 +10,9 @@ ext install class-extractor
 
 ## Usage
 
-Class Extractor adds two commands, `Extract CSS classes from HTML` and `Extract LESS/SCSS BEM classes from HTML`. Select some HTML markup, run either command (I recommend mapping your preferred option to something like `Ctrl + Alt + X`) and the CSS classes are added to your clipboard in the order they appear with no duplicates. The CSS format is `.[className] { }`, the LESS/SCSS BEM format is `.[className]{&__[element]{}&--[modifier]{}}`.
+Class Extractor adds two commands, `Extract CSS classes from HTML` and `Extract LESS/SCSS BEM classes from HTML`. Select some HTML markup, run either command (I recommend mapping your preferred option to something like `Ctrl + Alt + X`) and the CSS classes are added to your clipboard in the order they appear with no duplicates. The output format by default is `.[className] { }`, however this is configurable in the settings. The LESS/SCSS BEM option will automatically indent.
+
+It's recommended to edit your output format in the JSON settings editor as the VS Code interface doesn't render newlines and will escape backslash characters.
 
 ## Requirements
 
@@ -52,8 +54,15 @@ Uses the [ncp](https://github.com/xavi-/node-copy-paste) package, may require ex
 
 - [ ] Proper unit testing & code restructure to allow proper unit testing
 - [x] Indentation in class structure to match existing markup. Makes BEM work a little better
+- [ ] Automatically indent based on file or workspace preferences
+- [ ] Get indentation working better with incorrect BEM structure
+- [ ] Option for BEM sorting but without nesting classes
 
 ## Release Notes
+
+### 1.1.0
+
+Rewrote BEM option and allowed for custom output templating
 
 ### 1.0.4
 
