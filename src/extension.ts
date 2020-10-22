@@ -31,7 +31,7 @@ function processEl(list) {
 function replaceClassFromTemplate(cssClass: string): string {
 	var replacementTemplate: string = vscode.workspace.getConfiguration('class-extractor').get('outputClassFormat');
 	if (replacementTemplate == null || replacementTemplate === '') {
-		replacementTemplate = '.@ { }';
+		replacementTemplate = '@ { }';
 	}
 
 	return replacementTemplate.replace('@', cssClass);
@@ -81,7 +81,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const outputClasses = extractClassesFromMarkup(editor.document.getText(editor.selection));
 
 		const finalString = outputClasses.reduce((classText, classToAdd) =>
-			classText + (classText !== '' ? '\n' : '') + replaceClassFromTemplate(classToAdd), '');
+			classText + (classText !== '' ? '\n' : '') + replaceClassFromTemplate(`.${classToAdd}`), '');
 
 		// Copy string to user's clipboard and show notification
 		ncp.copy(finalString, () => {
@@ -157,23 +157,27 @@ export function activate(context: vscode.ExtensionContext) {
 			return structure;
 		}, []).flatMap(structure => structure.components);
 
-		let finalString = collapsedClassStructure.reduce((output, structure) => {
-			let getComponentChildOutput = (component, depth) => {
-				let childrenOutput = '';
-				if (component.children) {
-					childrenOutput = component.children.map(grandChild => getComponentChildOutput(grandChild, depth + 1)).join('\n');
-				}
-
+		let finalString = collapsedClassStructure.reduce((output, currentComponent) => {
+			let processComponent = (component, depth) => {
+				const classIndenting = '\t'.repeat(depth);
 				const separator = separatorTypes.find(type => type.outputType === component.type);
 
-				return replaceClassFromTemplate(`&${separator.text}${component.component}`).replace('}', `${childrenOutput}\n}`);
+				let componentOutput = replaceClassFromTemplate(`${classIndenting}${separator.text !== '' ? `&${separator.text}` : '.'}${component.component}`);
+
+				if (component.children) {
+					componentOutput = componentOutput.replace(/\s*}([^}]*)$/,
+						'\n' +
+						component.children.map(childComponent => processComponent(childComponent, depth + 1)).join('\n') +
+						`\n${classIndenting}}`);
+				}
+
+				return componentOutput;
 			};
 			
-			let descendants = structure.children ? structure.children.map(childComponent => getComponentChildOutput(childComponent, 0)) : '';
-			output += (output !== '' ? '\n' : '') + replaceClassFromTemplate(structure.component).replace('}', descendants !== '' ? `${descendants}\n}` : '}');
+			output += `\n${processComponent(currentComponent, 0)}`;
 
 			return output;
-		}, '');
+		}, '').replace(/^\s+/, '');
 
 		// Output string for user selection
 		ncp.copy(finalString, () => {
