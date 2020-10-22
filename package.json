@@ -36,7 +36,7 @@
             "properties": {
                 "class-extractor.outputClassFormat": {
                     "type": "string",
-                    "default": ".@ { }",
+                    "default": "@ { }",
                     "description": "Format string of the class extractor, where the first '@' is replaced with the class name.\r\nIf editing this setting in the visual editor, backslash characters (e.g. \\n) are escaped automatically."
                 }
             }

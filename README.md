@@ -10,7 +10,7 @@ ext install class-extractor
 
 ## Usage
 
-Class Extractor adds two commands, `Extract CSS classes from HTML` and `Extract LESS/SCSS BEM classes from HTML`. Select some HTML markup, run either command (I recommend mapping your preferred option to something like `Ctrl + Alt + X`) and the CSS classes are added to your clipboard in the order they appear with no duplicates. The output format by default is `.[className] { }`, however this is configurable in the settings. The LESS/SCSS BEM option will automatically indent.
+Class Extractor adds two commands, `Extract CSS classes from HTML` and `Extract LESS/SCSS BEM classes from HTML`. Select some HTML markup, run either command (I recommend mapping your preferred option to something like `Ctrl + Alt + X`) and the CSS classes are added to your clipboard in the order they appear with no duplicates. The output format by default is `[className] { }`, however this is configurable in the settings. The LESS/SCSS BEM option will automatically indent.
 
 It's recommended to edit your output format in the JSON settings editor as the VS Code interface doesn't render newlines and will escape backslash characters.
 
