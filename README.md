@@ -60,6 +60,10 @@ Uses the [ncp](https://github.com/xavi-/node-copy-paste) package, may require ex
 
 ## Release Notes
 
+### 1.1.1
+
+Fixed default output format
+
 ### 1.1.0
 
 Rewrote BEM option and allowed for custom output templating
